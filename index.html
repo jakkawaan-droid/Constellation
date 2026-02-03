@@ -1,0 +1,805 @@
+  <!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Constellation — Company Profile (Draft)</title>
+  <style>
+    :root{
+      --bg:#0b0f14;
+      --panel:#0f1620;
+      --panel2:#0c121a;
+      --border:rgba(255,255,255,.08);
+      --text:rgba(255,255,255,.86);
+      --muted:rgba(255,255,255,.60);
+      --muted2:rgba(255,255,255,.45);
+      --accent:#8fd3ff;
+      --accent2:#b6ffda;
+      --warn:#ffd27a;
+      --bad:#ff7b7b;
+      --ok:#7dffb2;
+      --shadow: 0 12px 30px rgba(0,0,0,.45);
+      --radius:16px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:
+        radial-gradient(1200px 800px at 15% 20%, rgba(143,211,255,.10), transparent 50%),
+        radial-gradient(900px 650px at 80% 30%, rgba(182,255,218,.07), transparent 55%),
+        radial-gradient(900px 700px at 60% 95%, rgba(255,210,122,.05), transparent 55%),
+        var(--bg);
+      color:var(--text);
+      font-family:var(--sans);
+      letter-spacing:.2px;
+    }
+    .app{
+      display:grid;
+      grid-template-columns: 320px 1fr;
+      min-height:100vh;
+    }
+
+    /* Sidebar */
+    .sidebar{
+      border-right:1px solid var(--border);
+      background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0));
+      padding:18px 16px;
+      position:sticky;
+      top:0;
+      height:100vh;
+      overflow:auto;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:10px 10px 14px;
+      margin-bottom:8px;
+    }
+    .logo{
+      width:34px;height:34px;border-radius:12px;
+      background:
+        radial-gradient(10px 10px at 28% 30%, rgba(255,255,255,.95), rgba(255,255,255,0) 60%),
+        radial-gradient(14px 14px at 62% 62%, rgba(143,211,255,.9), rgba(143,211,255,0) 62%),
+        radial-gradient(16px 16px at 44% 78%, rgba(182,255,218,.7), rgba(182,255,218,0) 65%),
+        rgba(255,255,255,.06);
+      box-shadow: 0 8px 22px rgba(0,0,0,.35);
+      border:1px solid rgba(255,255,255,.10);
+    }
+    .brand h1{
+      margin:0;
+      font-size:16px;
+      font-weight:650;
+      letter-spacing:1.4px;
+      text-transform:uppercase;
+    }
+    .brand .sub{
+      font-size:12px;color:var(--muted2);
+      margin-top:2px;
+      font-family:var(--mono);
+    }
+
+    .search{
+      margin:10px 10px 12px;
+      position:relative;
+    }
+    .search input{
+      width:100%;
+      padding:11px 12px 11px 36px;
+      border-radius:12px;
+      background: rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.08);
+      outline:none;
+      color:var(--text);
+    }
+    .search .icon{
+      position:absolute;left:12px;top:50%;
+      transform:translateY(-50%);
+      opacity:.65;
+      font-size:13px;
+    }
+
+    .sideSectionTitle{
+      margin:14px 10px 8px;
+      font-size:11px;
+      letter-spacing:1.2px;
+      text-transform:uppercase;
+      color:var(--muted2);
+    }
+
+    .companyList{
+      margin:0 6px 10px;
+      display:grid;
+      gap:8px;
+    }
+    .companyItem{
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.03);
+      border-radius:14px;
+      padding:10px 10px;
+      cursor:pointer;
+      transition: transform .08s ease;
+    }
+    .companyItem:hover{ transform: translateY(-1px); border-color: rgba(255,255,255,.12); }
+    .companyItem.active{ border-color: rgba(143,211,255,.35); background: rgba(143,211,255,.07); }
+    .companyTop{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+    }
+    .companyName{ font-weight:600; font-size:13px; }
+    .companyMeta{ font-size:11px;color:var(--muted2); font-family:var(--mono);}
+    .tagRow{ display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+    .chip{
+      font-size:11px;
+      padding:4px 8px;
+      border-radius:999px;
+      background: rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.08);
+      color:var(--muted);
+      white-space:nowrap;
+    }
+    .chip.ok{ border-color: rgba(125,255,178,.25); background: rgba(125,255,178,.08); color: rgba(210,255,229,.92); }
+    .chip.warn{ border-color: rgba(255,210,122,.25); background: rgba(255,210,122,.08); color: rgba(255,237,205,.92); }
+    .chip.bad{ border-color: rgba(255,123,123,.26); background: rgba(255,123,123,.08); color: rgba(255,213,213,.92); }
+
+    /* Main */
+    .main{
+      padding:18px 18px 28px;
+      overflow:auto;
+    }
+    .topbar{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:14px;
+    }
+    .titleBlock h2{
+      margin:0;
+      font-size:18px;
+      font-weight:700;
+      letter-spacing:.4px;
+    }
+    .titleBlock p{
+      margin:6px 0 0;
+      color:var(--muted2);
+      font-size:12px;
+      font-family:var(--mono);
+    }
+    .actions{
+      display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;
+    }
+    button{
+      background: rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.10);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      transition: border-color .12s ease, transform .08s ease;
+      font-size:12px;
+    }
+    button:hover{ border-color: rgba(255,255,255,.18); transform: translateY(-1px); }
+    button.primary{
+      background: rgba(143,211,255,.10);
+      border-color: rgba(143,211,255,.28);
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.12fr .88fr;
+      gap:14px;
+      align-items:start;
+    }
+
+    .card{
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.03);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .cardHeader{
+      padding:14px 16px 12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0));
+    }
+    .cardHeader h3{
+      margin:0;
+      font-size:13px;
+      letter-spacing:.8px;
+      text-transform:uppercase;
+      color:rgba(255,255,255,.78);
+    }
+    .hint{
+      color:var(--muted2);
+      font-size:11px;
+      font-family:var(--mono);
+      display:flex; gap:10px; align-items:center;
+    }
+    .cardBody{ padding:14px 16px 16px; }
+
+    .tabs{
+      display:flex; gap:8px; flex-wrap:wrap;
+      margin:0;
+      padding:12px 16px 12px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      background: rgba(0,0,0,.08);
+    }
+    .tab{
+      padding:8px 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.02);
+      color:var(--muted);
+      font-size:12px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .tab.active{
+      background: rgba(143,211,255,.10);
+      border-color: rgba(143,211,255,.25);
+      color:var(--text);
+    }
+
+    .badge{
+      display:inline-flex;
+      gap:6px;
+      align-items:center;
+      padding:4px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      font-size:11px;
+      font-family:var(--mono);
+      white-space:nowrap;
+    }
+    .badge.ok{ border-color: rgba(125,255,178,.25); background: rgba(125,255,178,.08); }
+    .badge.warn{ border-color: rgba(255,210,122,.22); background: rgba(255,210,122,.08); }
+    .badge.bad{ border-color: rgba(255,123,123,.25); background: rgba(255,123,123,.08); }
+
+    .metaGrid{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:10px;
+    }
+    .meta{
+      padding:10px 10px;
+      border:1px solid rgba(255,255,255,.07);
+      border-radius:14px;
+      background: rgba(0,0,0,.10);
+    }
+    .meta .k{ font-size:11px; color:var(--muted2); text-transform:uppercase; letter-spacing:1px;}
+    .meta .v{ margin-top:6px; font-size:13px; font-weight:600;}
+    .meta .s{ margin-top:4px; font-size:11px; color:var(--muted); font-family:var(--mono);}
+
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.07);
+      border-radius:14px;
+      background: rgba(0,0,0,.10);
+    }
+    th,td{
+      padding:10px 10px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      font-size:12px;
+      vertical-align:top;
+    }
+    th{
+      text-align:left;
+      color:var(--muted2);
+      font-size:11px;
+      letter-spacing:1px;
+      text-transform:uppercase;
+      background: rgba(255,255,255,.03);
+    }
+    tr:last-child td{ border-bottom:0; }
+    .num{ font-family:var(--mono); text-align:right; white-space:nowrap;}
+    .right{ text-align:right; }
+    .muted{ color:var(--muted); }
+    .divider{ height:1px; background: rgba(255,255,255,.07); margin:14px 0; }
+
+    .alertList{ display:grid; gap:10px; }
+    .alert{
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(0,0,0,.10);
+      padding:10px 10px;
+      display:grid;
+      gap:6px;
+    }
+    .alertTop{ display:flex; align-items:center; justify-content:space-between; gap:10px;}
+    .alertTitle{ font-weight:650; font-size:12px; }
+    .alertMeta{ font-size:11px; color:var(--muted2); font-family:var(--mono); }
+    .alertDesc{ font-size:12px; color:var(--muted); line-height:1.35; }
+    .alert.crit{ border-color: rgba(255,123,123,.30); background: rgba(255,123,123,.06); }
+    .alert.warn{ border-color: rgba(255,210,122,.28); background: rgba(255,210,122,.05); }
+    .alert.info{ border-color: rgba(143,211,255,.22); background: rgba(143,211,255,.05); }
+
+    .footerNote{
+      margin-top:12px;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.07);
+      background: rgba(0,0,0,.08);
+      color:var(--muted2);
+      font-size:11px;
+      font-family:var(--mono);
+    }
+
+    @media (max-width: 1100px){
+      .app{ grid-template-columns: 1fr; }
+      .sidebar{ position:relative; height:auto; }
+      .grid{ grid-template-columns: 1fr; }
+      .metaGrid{ grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>Constellation</h1>
+          <div class="sub">company profile view • draft UI</div>
+        </div>
+      </div>
+
+      <div class="search">
+        <div class="icon">⌕</div>
+        <input id="search" placeholder="Search company…" />
+      </div>
+
+      <div class="sideSectionTitle">Companies</div>
+      <div class="companyList" id="companyList"></div>
+
+      <div class="footerNote">
+        Draft scope: Company profile only (no portfolio dashboard).
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <div class="topbar">
+        <div class="titleBlock">
+          <h2 id="pageTitle">Company Profile</h2>
+          <p id="pageSub">Constellation • Feb 3, 2026 • Draft layout</p>
+        </div>
+        <div class="actions">
+          <button onclick="toast('Opened import wizard (draft)')">Import Financials</button>
+          <button onclick="toast('Saved changes (draft)')">Save</button>
+          <button class="primary" onclick="toast('Exporting 1-pager PDF (draft)')">Export 1-Pager</button>
+        </div>
+      </div>
+
+      <div class="grid">
+        <!-- Company profile -->
+        <section class="card">
+          <div class="cardHeader">
+            <h3 id="companyHeader">—</h3>
+            <div class="hint" id="companyHint">Select a company</div>
+          </div>
+
+          <div class="tabs" id="companyTabs">
+            <div class="tab active" data-tab="overview" onclick="setTab('overview')">Overview</div>
+            <div class="tab" data-tab="financials" onclick="setTab('financials')">Financials</div>
+            <div class="tab" data-tab="score" onclick="setTab('score')">Score</div>
+            <div class="tab" data-tab="comps" onclick="setTab('comps')">Comps</div>
+            <div class="tab" data-tab="activity" onclick="setTab('activity')">Activity</div>
+            <div class="tab" data-tab="docs" onclick="setTab('docs')">Docs</div>
+          </div>
+
+          <div class="cardBody" id="tab_overview"></div>
+          <div class="cardBody" id="tab_financials" style="display:none;"></div>
+          <div class="cardBody" id="tab_score" style="display:none;"></div>
+          <div class="cardBody" id="tab_comps" style="display:none;"></div>
+          <div class="cardBody" id="tab_activity" style="display:none;"></div>
+          <div class="cardBody" id="tab_docs" style="display:none;"></div>
+        </section>
+
+        <!-- Right rail -->
+        <aside class="card">
+          <div class="cardHeader">
+            <h3>Alerts & Notes</h3>
+            <div class="hint"><span class="badge">INBOX</span></div>
+          </div>
+          <div class="cardBody">
+            <div class="alertList" id="rightRail"></div>
+            <div class="divider"></div>
+            <table>
+              <thead>
+                <tr><th>Audit trail</th><th class="right">Latest</th></tr>
+              </thead>
+              <tbody>
+                <tr><td class="muted">Data edit saved</td><td class="num" id="auditLatest">—</td></tr>
+                <tr><td class="muted">Created by</td><td class="num">—</td></tr>
+                <tr><td class="muted">Version</td><td class="num">—</td></tr>
+              </tbody>
+            </table>
+            <div class="footerNote">
+              In production: every field edit creates a new immutable version record.
+            </div>
+          </div>
+        </aside>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Demo data (replace with DB/API later)
+    const companies = [
+      { id:"K", name:"Company K", sector:"Fintech", arr:18.2, burn:0.42, runway:14.0, updated:"2026-02-02", score:7.2, tier:"yellow" },
+      { id:"Q", name:"Company Q", sector:"Healthcare IT", arr:4.8, burn:0.60, runway:6.1,  updated:"2026-01-31", score:5.6, tier:"orange" },
+      { id:"X", name:"Company X", sector:"SaaS", arr:6.5, burn:0.55, runway:2.7,  updated:"2026-01-28", score:3.8, tier:"red" },
+      { id:"M", name:"Company M", sector:"Marketplace", arr:0.4, burn:0.18, runway:11.8, updated:"2025-11-25", score:6.4, tier:"yellow" },
+    ];
+
+    // Helpers
+    function detectStage(arrM){
+      if(arrM === 0 || arrM < 0.5) return "Pre-revenue / Seed";
+      if(arrM < 5) return "Series A";
+      if(arrM < 20) return "Series B";
+      return "Series B+";
+    }
+    function scoreBadge(score){
+      if(score>=8) return `<span class="badge ok">🟢 ${score.toFixed(1)} / 10</span>`;
+      if(score>=6) return `<span class="badge warn">🟡 ${score.toFixed(1)} / 10</span>`;
+      if(score>=4) return `<span class="badge warn">🟠 ${score.toFixed(1)} / 10</span>`;
+      return `<span class="badge bad">🔴 ${score.toFixed(1)} / 10</span>`;
+    }
+    function tierChip(tier){
+      if(tier==="green") return `<span class="chip ok">🟢 GREEN</span>`;
+      if(tier==="yellow") return `<span class="chip warn">🟡 YELLOW</span>`;
+      if(tier==="orange") return `<span class="chip warn">🟠 ORANGE</span>`;
+      return `<span class="chip bad">🔴 RED</span>`;
+    }
+
+    // Sidebar render
+    const companyListEl = document.getElementById("companyList");
+    const searchEl = document.getElementById("search");
+
+    function renderCompanyList(filter=""){
+      const q = filter.trim().toLowerCase();
+      const items = companies
+        .filter(c => !q || c.name.toLowerCase().includes(q) || c.sector.toLowerCase().includes(q))
+        .map(c => `
+          <div class="companyItem" id="side_${c.id}" onclick="openCompany('${c.id}')">
+            <div class="companyTop">
+              <div>
+                <div class="companyName">${c.name}</div>
+                <div class="companyMeta">${c.sector} • updated ${c.updated}</div>
+              </div>
+              ${scoreBadge(c.score)}
+            </div>
+            <div class="tagRow">
+              ${tierChip(c.tier)}
+              <span class="chip">ARR: $${c.arr.toFixed(1)}M</span>
+              <span class="chip">Runway: ${c.runway.toFixed(1)}mo</span>
+            </div>
+          </div>
+        `).join("");
+
+      companyListEl.innerHTML = items || `<div class="footerNote">No results.</div>`;
+    }
+
+    searchEl.addEventListener("input", (e)=> renderCompanyList(e.target.value));
+
+    // Tabs
+    function setTab(tab){
+      document.querySelectorAll("#companyTabs .tab").forEach(t=>{
+        t.classList.toggle("active", t.dataset.tab===tab);
+      });
+      ["overview","financials","score","comps","activity","docs"].forEach(k=>{
+        document.getElementById(`tab_${k}`).style.display = (k===tab) ? "" : "none";
+      });
+    }
+
+    // Company open + render
+    function openCompany(id){
+      const c = companies.find(x=>x.id===id);
+      if(!c) return;
+
+      document.querySelectorAll(".companyItem").forEach(el=>el.classList.remove("active"));
+      const activeEl = document.getElementById(`side_${id}`);
+      if(activeEl) activeEl.classList.add("active");
+
+      document.getElementById("companyHeader").textContent = c.name;
+      document.getElementById("companyHint").textContent = `${c.sector} • Stage (auto): ${detectStage(c.arr)} • Last updated ${c.updated}`;
+      document.getElementById("auditLatest").textContent = c.updated;
+
+      // Right rail alerts (directional)
+      const rr = document.getElementById("rightRail");
+      rr.innerHTML = `
+        <div class="alert ${c.runway < 3 ? "crit" : (c.runway < 6 ? "warn" : "info")}">
+          <div class="alertTop">
+            <div class="alertTitle">${c.runway < 3 ? "Critical Runway" : (c.runway < 6 ? "Low Runway Warning" : "Runway OK")}</div>
+            <div class="alertMeta">${c.runway.toFixed(1)} mo</div>
+          </div>
+          <div class="alertDesc">
+            Trigger logic (demo): &lt;3 = critical; 3–6 = warning. Suggested actions surface here.
+          </div>
+        </div>
+        <div class="alert info">
+          <div class="alertTop">
+            <div class="alertTitle">News scan</div>
+            <div class="alertMeta">pending</div>
+          </div>
+          <div class="alertDesc">Auto-detected mentions populate an activity queue for review (not auto-published).</div>
+        </div>
+      `;
+
+      // Overview
+      document.getElementById("tab_overview").innerHTML = `
+        <div class="metaGrid">
+          <div class="meta">
+            <div class="k">Health Score</div>
+            <div class="v">${scoreBadge(c.score)} <span class="badge">${c.tier.toUpperCase()}</span></div>
+            <div class="s">Total = Σ(category_score × weight)</div>
+          </div>
+          <div class="meta">
+            <div class="k">Key Metrics</div>
+            <div class="v">ARR $${c.arr.toFixed(1)}M • Burn $${c.burn.toFixed(2)}M/mo</div>
+            <div class="s">Runway = cash / burn (demo)</div>
+          </div>
+          <div class="meta">
+            <div class="k">Stage Detection</div>
+            <div class="v">${detectStage(c.arr)}</div>
+            <div class="s">ARR &lt;0.5 = Seed; &lt;5 = A; &lt;20 = B</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Section</th>
+              <th>What you’d see here</th>
+              <th class="right">Owner</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Accounting normalization</td><td class="muted">Free-text notes (cash vs accrual, one-offs, deferred rev, etc.)</td><td class="num">VC team</td></tr>
+            <tr><td>Recommended actions</td><td class="muted">Board cadence, fundraising timeline, support asks, risk triage</td><td class="num">Deal lead</td></tr>
+            <tr><td>Versioning</td><td class="muted">“View history” next to every field + “view as of date” snapshot</td><td class="num">System</td></tr>
+          </tbody>
+        </table>
+
+        <div class="footerNote">
+          This is a layout preview. In production, values pull from your versioned tables (company_data + change_log).
+        </div>
+      `;
+
+      // Financials (demo)
+      document.getElementById("tab_financials").innerHTML = `
+        <div class="alert info">
+          <div class="alertTop">
+            <div class="alertTitle">Financials</div>
+            <div class="alertMeta">QoQ / YoY</div>
+          </div>
+          <div class="alertDesc">Demo table structure with conditional flags; formulas computed from time-series by effective_date.</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Line Item</th>
+              <th class="right">Q3</th>
+              <th class="right">Q4</th>
+              <th class="right">QoQ</th>
+              <th class="right">YoY</th>
+              <th class="right">Flag</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Revenue</td>
+              <td class="num">$2.0M</td>
+              <td class="num">$2.2M</td>
+              <td class="num">+10%</td>
+              <td class="num">+80%</td>
+              <td class="right"><span class="badge ok">🟢</span></td>
+            </tr>
+            <tr>
+              <td>Gross Margin %</td>
+              <td class="num">80%</td>
+              <td class="num">82%</td>
+              <td class="num">+2pp</td>
+              <td class="num">+10pp</td>
+              <td class="right"><span class="badge ok">🟢</span></td>
+            </tr>
+            <tr>
+              <td>Monthly Burn</td>
+              <td class="num">$0.38M</td>
+              <td class="num">$${c.burn.toFixed(2)}M</td>
+              <td class="num">+45%</td>
+              <td class="num">+20%</td>
+              <td class="right"><span class="badge bad">🚨 &gt;30%</span></td>
+            </tr>
+            <tr>
+              <td>Runway (months)</td>
+              <td class="num">6.5</td>
+              <td class="num">${c.runway.toFixed(1)}</td>
+              <td class="num">-58%</td>
+              <td class="num">—</td>
+              <td class="right"><span class="badge ${c.runway < 3 ? "bad" : "warn"}">${c.runway < 3 ? "🔴" : "🟠"}</span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="footerNote">
+          Direction-aware coloring: burn down = green; EBITDA less negative = green; flat &lt;5% = yellow; abs change &gt;30% = red alert.
+        </div>
+      `;
+
+      // Score (demo)
+      document.getElementById("tab_score").innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th class="right">Score</th>
+              <th class="right">Weight</th>
+              <th class="right">Points</th>
+              <th>Flag</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Team</td><td class="num">8.0</td><td class="num">0.20</td><td class="num">1.60</td><td class="muted">N/A excluded → scaled</td></tr>
+            <tr><td>Traction</td><td class="num">7.5</td><td class="num">0.20</td><td class="num">1.50</td><td class="muted">NRR missing → denominator adjusted</td></tr>
+            <tr><td>Financials</td><td class="num">6.0</td><td class="num">0.20</td><td class="num">1.20</td><td class="muted">runway + burn multiple</td></tr>
+            <tr><td>Market</td><td class="num">8.5</td><td class="num">0.15</td><td class="num">1.28</td><td class="muted">TAM + CAGR + moat</td></tr>
+            <tr><td>Execution</td><td class="num">7.0</td><td class="num">0.15</td><td class="num">1.05</td><td class="muted">milestone hit rate</td></tr>
+            <tr><td>Valuation/Return</td><td class="num">5.0</td><td class="num">0.10</td><td class="num">0.50</td><td class="muted">exit model missing → default mid</td></tr>
+            <tr><td><b>Total</b></td><td class="num"><b>—</b></td><td class="num"><b>—</b></td><td class="num"><b>7.13</b></td><td class="muted"><b>demo</b></td></tr>
+          </tbody>
+        </table>
+
+        <div class="footerNote">
+          In production: total = Σ(category_score × weight). Stage recalibration modifies which metrics apply.
+        </div>
+      `;
+
+      // Comps (demo)
+      document.getElementById("tab_comps").innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Public comps</th>
+              <th class="right">Rev Growth</th>
+              <th class="right">EV/Rev (LTM)</th>
+              <th class="right">EV/Rev (NTM)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Comp A (AAA)</td><td class="num">32%</td><td class="num">10.5x</td><td class="num">8.9x</td></tr>
+            <tr><td>Comp B (BBB)</td><td class="num">45%</td><td class="num">12.2x</td><td class="num">10.1x</td></tr>
+            <tr><td><b>Median</b></td><td class="num"><b>32%</b></td><td class="num"><b>10.5x</b></td><td class="num"><b>8.9x</b></td></tr>
+          </tbody>
+        </table>
+
+        <div class="divider"></div>
+
+        <div class="metaGrid">
+          <div class="meta">
+            <div class="k">Our implied EV/Rev (LTM)</div>
+            <div class="v">16.7x <span class="badge warn">premium</span></div>
+            <div class="s">premium vs median = (16.7/10.5 − 1) = 59%</div>
+          </div>
+          <div class="meta">
+            <div class="k">Reasonableness</div>
+            <div class="v">Needs justification</div>
+            <div class="s">growth + GM + NRR should explain premium</div>
+          </div>
+          <div class="meta">
+            <div class="k">Refresh</div>
+            <div class="v">Monthly + On-demand</div>
+            <div class="s">Finviz + PitchBook CSV/API</div>
+          </div>
+        </div>
+
+        <div class="footerNote">
+          In production: comps are auto-matched (sector/model/size) + manual lock set; medians computed dynamically.
+        </div>
+      `;
+
+      // Activity (demo)
+      document.getElementById("tab_activity").innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Summary</th>
+              <th class="right">By</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="num">2026-02-03</td><td>News</td><td class="muted">Auto-scan flagged “funding” • pending review</td><td class="num">Auto</td></tr>
+            <tr><td class="num">${c.updated}</td><td>Financials</td><td class="muted">Uploaded statement • recalculated runway</td><td class="num">Analyst</td></tr>
+            <tr><td class="num">2026-01-15</td><td>Team</td><td class="muted">Exec hire added • score recalculated</td><td class="num">Deal Lead</td></tr>
+          </tbody>
+        </table>
+
+        <div class="footerNote">
+          In production: every activity item links to source docs (press, notes, uploads) and is versioned.
+        </div>
+      `;
+
+      // Docs (demo)
+      document.getElementById("tab_docs").innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Document</th>
+              <th>Folder</th>
+              <th class="right">Date</th>
+              <th class="right">Version</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Board Deck — Q4 2024.pdf</td><td class="muted">Board Materials</td><td class="num">2025-01-10</td><td class="num">v3</td></tr>
+            <tr><td>Investor Update — Jan 2026.docx</td><td class="muted">Investor Updates</td><td class="num">${c.updated}</td><td class="num">v1</td></tr>
+            <tr><td>Financials — Q4 2024.xlsx</td><td class="muted">Financials</td><td class="num">${c.updated}</td><td class="num">v2</td></tr>
+          </tbody>
+        </table>
+
+        <div class="footerNote">
+          Replace/Upload keeps old versions; “View as of date” loads the snapshot across all tabs.
+        </div>
+      `;
+
+      setTab("overview");
+      toast(`Opened ${c.name}`);
+    }
+
+    // Toast
+    let toastTimer=null;
+    function toast(msg){
+      let el = document.getElementById("toast");
+      if(!el){
+        el = document.createElement("div");
+        el.id="toast";
+        el.style.position="fixed";
+        el.style.left="50%";
+        el.style.bottom="18px";
+        el.style.transform="translateX(-50%)";
+        el.style.padding="10px 12px";
+        el.style.borderRadius="14px";
+        el.style.border="1px solid rgba(255,255,255,.10)";
+        el.style.background="rgba(0,0,0,.55)";
+        el.style.backdropFilter="blur(8px)";
+        el.style.color="rgba(255,255,255,.85)";
+        el.style.fontFamily="var(--mono)";
+        el.style.fontSize="12px";
+        el.style.boxShadow="0 18px 40px rgba(0,0,0,.55)";
+        el.style.zIndex="9999";
+        document.body.appendChild(el);
+      }
+      el.textContent = msg;
+      el.style.opacity="1";
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(()=>{ el.style.opacity="0"; }, 1700);
+    }
+
+    // Init
+    renderCompanyList();
+    // auto-open a company for “glimpse”
+    openCompany("K");
+  </script>
+</body>
+</html>
